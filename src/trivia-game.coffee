@@ -46,6 +46,7 @@ class Game
       @robot.logger.debug "Answer is #{@currentQ.answer}"
       # remove optional portions of answer that are in parens
       @currentQ.validAnswer = @currentQ.answer.replace /\(.*\)/, ""
+      @currentQ.validAnswer = @currentQ.answer.trim()
 
     $question = Cheerio.load ("<span>" + @currentQ.question + "</span>")
     link = $question('a').attr('href')
@@ -92,7 +93,8 @@ class Game
 
   hint: (resp) ->
     if @currentQ
-      answer = @currentQ.validAnswer
+      answer = @currentQ.validAnswer.replace /^(a(n?)|the)\w/, ""
+      answer = answer.trim()
       hint = answer.substr(0,@hintLength) + answer.substr(@hintLength,(answer.length + @hintLength)).replace(/./g, ".")
       if @hintLength <= answer.length
         @hintLength += 1
@@ -118,20 +120,20 @@ class Game
 
 module.exports = (robot) ->
   game = new Game(robot)
-  robot.hear /^!trivia/, (resp) ->
+  robot.hear /!trivia/i, (resp) ->
     game.askQuestion(resp)
 
-  robot.hear /^!skip/, (resp) ->
+  robot.hear /!skip/i, (resp) ->
     game.skipQuestion(resp)
 
-  robot.hear /^!a(nswer)? (.*)/, (resp) ->
+  robot.hear /!a(nswer)? (.*)/, (resp) ->
     game.answerQuestion(resp, resp.match[2])
 
-  robot.hear /^!score (.*)/i, (resp) ->
+  robot.hear /!score (.*)/i, (resp) ->
     game.checkScore(resp, resp.match[1].toLowerCase().trim())
 
-  robot.hear /^!scores/i, (resp) ->
+  robot.hear /!scores/i, (resp) ->
     game.checkScore(resp, "all")
 
-  robot.hear /^!h(int)?/, (resp) ->
+  robot.hear /!h(int)?/i, (resp) ->
     game.hint(resp)
