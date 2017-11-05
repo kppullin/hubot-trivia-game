@@ -93,7 +93,7 @@ class Game
 
   hint: (resp) ->
     if @currentQ
-      answer = @currentQ.validAnswer.replace /^(a(n?)|the)\w/, ""
+      answer = @currentQ.validAnswer.replace /^(a(n?)|the)\s/, ""
       answer = answer.trim()
       hint = answer.substr(0,@hintLength) + answer.substr(@hintLength,(answer.length + @hintLength)).replace(/./g, ".")
       if @hintLength <= answer.length
