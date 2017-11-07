@@ -48,6 +48,8 @@ class Game
       @currentQ.validAnswer = @currentQ.answer.replace /\(.*\)/, ""
       @currentQ.validAnswer = @currentQ.answer.trim()
 
+      @currentQ.value = randomValue() if !@currentQ.value
+
     $question = Cheerio.load ("<span>" + @currentQ.question + "</span>")
     link = $question('a').attr('href')
     text = $question('span').text()
@@ -117,6 +119,17 @@ class Game
         user.triviaScore = user.triviaScore or 0
         resp.send "#{user.name} - $#{user.triviaScore}"
 
+  randomValue: ->
+    # Try N times to find a question with a valid 'value'
+    attempts = 0
+    while attempts < 20
+      index = Math.floor(Math.random() * @questions.length)
+      value = @questions[index].value
+      return value if value
+      ++attempts
+
+    # We still failed to find a valid value. Return a reasonable default
+    1000
 
 module.exports = (robot) ->
   game = new Game(robot)
