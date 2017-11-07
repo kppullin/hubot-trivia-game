@@ -48,7 +48,7 @@ class Game
       @currentQ.validAnswer = @currentQ.answer.replace /\(.*\)/, ""
       @currentQ.validAnswer = @currentQ.answer.trim()
 
-      @currentQ.value = randomValue() if !@currentQ.value
+      @currentQ.value = randomValue() if !@currentQ.value?
 
     $question = Cheerio.load ("<span>" + @currentQ.question + "</span>")
     link = $question('a').attr('href')
