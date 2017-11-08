@@ -45,10 +45,12 @@ class Game
       @hintLength = 1
       @robot.logger.debug "Answer is #{@currentQ.answer}"
       # remove optional portions of answer that are in parens
-      @currentQ.validAnswer = @currentQ.answer.replace /\(.*\)/, ""
-      @currentQ.validAnswer = @currentQ.answer.trim()
+      @currentQ.validAnswer = @currentQ.answer.replace /\(.*?\)\s?/g, ""
+      # remove leading and trailing quotes
+      @currentQ.validAnswer = @currentQ.validAnswer.replace /^"|"$/g, ""
+      @currentQ.validAnswer = @currentQ.validAnswer.trim()
 
-      @currentQ.value = randomValue() if !@currentQ.value?
+      @currentQ.value = @randomValue() if !@currentQ.value?
 
     $question = Cheerio.load ("<span>" + @currentQ.question + "</span>")
     link = $question('a').attr('href')
@@ -69,13 +71,13 @@ class Game
 
   answerQuestion: (resp, guess) ->
     if @currentQ
-      checkGuess = guess.toLowerCase()
       # remove html entities (slack's adapter sends & as &amp; now)
-      checkGuess = checkGuess.replace /&.{0,}?;/, ""
+      checkGuess = guess.replace /&.{0,}?;/, ""
+
       # remove all punctuation and spaces, and see if the answer is in the guess.
-      checkGuess = checkGuess.replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
-      checkAnswer = @currentQ.validAnswer.toLowerCase().replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
-      checkAnswer = checkAnswer.replace /^(a(n?)|the)/g, ""
+      checkGuess = @normalizeAnswer(checkGuess)
+      checkAnswer = @normalizeAnswer(@currentQ.validAnswer)
+
       if AnswerChecker(checkGuess, checkAnswer)
         resp.reply "YOU ARE CORRECT!!1!!!111!! The answer is #{@currentQ.answer}"
         name = resp.envelope.user.name.toLowerCase().trim()
@@ -93,9 +95,15 @@ class Game
     else
       resp.send "There is no active question!"
 
+  normalizeAnswer: (answer) ->
+    # remove punctuation
+    normalized = answer.toLowerCase().replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
+    # remove leading 'a', 'an', 'the'
+    normalized = normalized.replace /^(a(n?)|the)\s/g, ""
+
   hint: (resp) ->
     if @currentQ
-      answer = @currentQ.validAnswer.replace /^(a(n?)|the)\s/, ""
+      answer = @currentQ.validAnswer.replace /^(a(n?)|the)\s/i, ""
       answer = answer.trim()
       hint = answer.substr(0,@hintLength) + answer.substr(@hintLength,(answer.length + @hintLength)).replace(/./g, ".")
       if @hintLength <= answer.length
@@ -129,7 +137,7 @@ class Game
       ++attempts
 
     # We still failed to find a valid value. Return a reasonable default
-    1000
+    "1000"
 
 module.exports = (robot) ->
   game = new Game(robot)
