@@ -99,7 +99,7 @@ class Game
     # remove leading 'a', 'an', 'the'
     normalized = answer.toLowerCase().replace /^(a(n?)|the)\s/g, ""
     # remove punctuation
-    normalized = answer.replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
+    normalized = normalized.replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
 
   hint: (resp) ->
     if @currentQ
