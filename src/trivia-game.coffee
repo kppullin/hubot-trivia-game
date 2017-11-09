@@ -96,10 +96,10 @@ class Game
       resp.send "There is no active question!"
 
   normalizeAnswer: (answer) ->
-    # remove punctuation
-    normalized = answer.toLowerCase().replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
     # remove leading 'a', 'an', 'the'
-    normalized = normalized.replace /^(a(n?)|the)\s/g, ""
+    normalized = answer.toLowerCase().replace /^(a(n?)|the)\s/g, ""
+    # remove punctuation
+    normalized = answer.replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
 
   hint: (resp) ->
     if @currentQ
