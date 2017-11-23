@@ -42,7 +42,7 @@ class Game
     unless @currentQ # set current question
       index = Math.floor(Math.random() * @questions.length)
       @currentQ = @questions[index]
-      @hintLength = 1
+      @hintLength = 0
       @robot.logger.debug "Answer is #{@currentQ.answer}"
       # remove optional portions of answer that are in parens
       @currentQ.validAnswer = @currentQ.answer.replace /\(.*?\)\s?/g, ""
@@ -90,6 +90,8 @@ class Game
         @robot.brain.save()
         @currentQ = null
         @hintLength = null
+
+        @askQuestion(resp)
       else
         resp.send "#{guess} is incorrect."
     else
@@ -101,13 +103,19 @@ class Game
     # remove punctuation
     normalized = normalized.replace /[\\'"\.,-\/#!$%\^&\*;:{}=\-_`~()\s]/g, ""
 
-  hint: (resp) ->
+  hint: (resp, extendedHint) ->
     if @currentQ
       answer = @currentQ.validAnswer.replace /^(a(n?)|the)\s/i, ""
       answer = answer.trim()
-      hint = answer.substr(0,@hintLength) + answer.substr(@hintLength,(answer.length + @hintLength)).replace(/./g, ".")
-      if @hintLength <= answer.length
+
+      if extendedHint
+        # When the `extenedHint` flag is true, expand the hint by 40% of the remaining hidden chars
+        remainingChars = answer.length - @hintLength
+        @hintLength = @hintLength + Math.floor(remainingChars * .4)
+      else if @hintLength < answer.length
         @hintLength += 1
+
+      hint = answer.substr(0,@hintLength) + answer.substr(@hintLength,(answer.length + @hintLength)).replace(/./g, ".")
       resp.send hint
     else
       resp.send "There is no active question!"
@@ -157,4 +165,5 @@ module.exports = (robot) ->
     game.checkScore(resp, "all")
 
   robot.hear /!h(int)?/i, (resp) ->
-    game.hint(resp)
+    extendedHint = resp.match[0] == "H";
+    game.hint(resp, extendedHint)
