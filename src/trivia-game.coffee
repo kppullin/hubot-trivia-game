@@ -165,5 +165,5 @@ module.exports = (robot) ->
     game.checkScore(resp, "all")
 
   robot.hear /!h(int)?/i, (resp) ->
-    extendedHint = resp.match[0] == "H";
+    extendedHint = resp.match[0][1] == "H";
     game.hint(resp, extendedHint)
