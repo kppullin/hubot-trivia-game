@@ -109,11 +109,16 @@ class Game
       answer = answer.trim()
 
       if extendedHint
-        # When the `extenedHint` flag is true, expand the hint by 40% of the remaining hidden chars
+        # When the `extenedHint` flag is true, expand the hint by the
+        # MAX of (40% of the remaining hidden chars, 2)
         remainingChars = answer.length - @hintLength
-        @hintLength = @hintLength + Math.floor(remainingChars * .4)
-      else if @hintLength < answer.length
+        extLength = Math.max(Math.floor(remainingChars * .4), 2)
+        @hintLength = @hintLength + extLength
+      else
         @hintLength += 1
+
+      # We may have exceeded the answer length via the increments above. Cap the length.
+      @hintLength = Math.min(answer.length, @hintLength)
 
       hint = answer.substr(0,@hintLength) + answer.substr(@hintLength,(answer.length + @hintLength)).replace(/./g, ".")
       resp.send hint
